@@ -1,0 +1,29 @@
+{% extends 'kiosk_app/base.html' %}
+
+{% block title %}Menu - Fast Food Kiosk{% endblock %}
+
+{% block content %}
+<h1 class="text-center">Our Menu</h1>
+{% for categoria in categorias %}
+  <h2>{{ categoria.nome_categoria}}</h2>
+  <div class="row">
+    {% for item in itens %}
+      {% if item.categoria == categoria %}
+        <div class="col-md-4">
+          <div class="card mb-4">
+            {% if item.imagem_item %}
+              <img src="{{ item.imagem_item.url }}" class="card-img-top" alt="{{ item.nome_item }}">
+            {% endif %}
+            <div class="card-body">
+              <h5 class="card-title">{{ item.nome_item }}</h5>
+              <p class="card-text">{{ item.descricao }}</p>
+              <p class="card-text"><strong>${{ item.preco_item }}</strong></p>
+              <a href="{% url 'item_detalhe' item.id %}" class="btn btn-primary">View Details</a>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+{% endfor %}
+{% endblock %}
