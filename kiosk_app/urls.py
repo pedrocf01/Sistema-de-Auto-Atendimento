@@ -4,11 +4,12 @@ from django.contrib import admin
 
 urlpatterns = [
     # URLs do Cliente
-    #path('', views.cardapio_view, name='cardapio'),
+    path('', views.cardapio_view, name='cardapio'),
     path('item/<int:item_id>/', views.item_detalhe_view, name='item_detalhe'),
     path('carrinho/', views.carrinho_view, name='carrinho'),
     path('pedido/resumo/', views.pedido_resumo_view, name='pedido_resumo'),
     path('pedido/rastreio/', views.pedido_rastreio_view, name='pedido_rastreio'),
+    path('', include('users.urls'))
 
     # # Admin URLs
     # path('admin/users/', views.admin_user_management, name='admin_users'),
