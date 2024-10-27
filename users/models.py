@@ -8,6 +8,7 @@ class Usuario(AbstractUser):
         ('cozinheiro', 'Cozinheiro'),
     )
     papel = models.CharField(max_length=20, choices=ROLES, default='cliente')
-
+    cpf = models.CharField(max_length=14, unique=True)
+    
     def __str__(self):
         return f"{self.username} ({self.get_papel_display()})"
