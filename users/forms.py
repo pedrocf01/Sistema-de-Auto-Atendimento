@@ -4,10 +4,11 @@ from .models import Usuario
 
 class RegistroClienteForm(UserCreationForm):
     email = forms.EmailField(required=True)
+    cpf = forms.CharField(max_length=14, required=True)
 
     class Meta:
         model = Usuario
-        fields = ['username', 'email', 'password1', 'password2']
+        fields = ['username', 'email', 'cpf', 'password1', 'password2']
 
     def save(self, commit=True):
         user = super().save(commit=False)
