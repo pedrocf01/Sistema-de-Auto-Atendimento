@@ -49,9 +49,18 @@ class Item(models.Model):
     imagem_item = models.ImageField(upload_to='itens/', null=True, blank=True)
     id_categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE)
     id_promocao = models.ForeignKey(Promocao, on_delete=models.SET_NULL, null=True, blank=True)
+    ingredientes = models.ManyToManyField('Ingrediente', related_name='itens', blank=True)
 
     def __str__(self):
         return self.nome_item
+
+
+class Ingrediente(models.Model):
+    nome = models.CharField(max_length=100)
+    valor_nutricional = models.PositiveIntegerField(blank=True)  # Informação nutricional
+
+    def __str__(self):
+        return self.nome
 
 
 class Pedido(models.Model):
@@ -66,6 +75,9 @@ class Pedido(models.Model):
     metodo_pagamento = models.CharField(max_length=30, null=False)
     status_pedido = models.IntegerField(choices=OPCOES_STATUS, default=0)
     data_pedido = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Pedido {self.id} - {self.cliente.username}"
 
 
 class TamanhoItem(models.Model):
