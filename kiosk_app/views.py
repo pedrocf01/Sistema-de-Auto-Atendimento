@@ -1,5 +1,6 @@
 from django.shortcuts import render
-from .models import Categoria, Item
+from .models import Categoria, Item, Pedido
+from django.contrib.auth.decorators import login_required
 
 def cardapio_view(request):
     categorias = Categoria.objects.all()
@@ -38,8 +39,9 @@ def pedido_resumo_view(request):
     pass
 
 
+@login_required
 def pedido_rastreio_view(request):
-    pedidos = Pedido.objects.filter(customer=request.user)
+    pedidos = Pedido.objects.filter(cliente=request.user)
     context = {
         'pedidos': pedidos,
     }
