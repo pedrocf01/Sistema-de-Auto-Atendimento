@@ -1,28 +1,40 @@
-{% extends 'kiosk_app/base.html' %}
+<!-- templates/kiosk_app/cardapio.html -->
+{% extends 'base.html' %}
 
-{% block title %}Menu - Fast Food Kiosk{% endblock %}
+{% block title %}Cardápio{% endblock %}
 
 {% block content %}
-<h1 class="text-center">Our Menu</h1>
+<h1 class="text-center">Cardápio</h1>
 {% for categoria in categorias %}
-  <h2>{{ categoria.nome_categoria}}</h2>
+  <h2>{{ categoria.nome_categoria }}</h2>
   <div class="row">
-    {% for item in itens %}
-      {% if item.categoria == categoria %}
-        <div class="col-md-4">
-          <div class="card mb-4">
-            {% if item.imagem_item %}
-              <img src="{{ item.imagem_item.url }}" class="card-img-top" alt="{{ item.nome_item }}">
-            {% endif %}
-            <div class="card-body">
-              <h5 class="card-title">{{ item.nome_item }}</h5>
-              <p class="card-text">{{ item.descricao }}</p>
-              <p class="card-text"><strong>${{ item.preco_item }}</strong></p>
-              <a href="{% url 'item_detalhe' item.id %}" class="btn btn-primary">View Details</a>
-            </div>
+    {% for item in categoria.item_set.all %}
+      <div class="col-md-4">
+        <div class="card mb-4">
+          {% if item.imagem_item %}
+            <img src="{{ item.imagem_item.url }}" class="card-img-top" alt="{{ item.nome_item }}">
+          {% endif %}
+          <div class="card-body">
+            <h5 class="card-title">{{ item.nome_item }}</h5>
+            <p class="card-text">{{ item.descricao }}</p>
+            <form action="{% url 'adicionar_ao_carrinho' %}" method="post">
+              {% csrf_token %}
+              <input type="hidden" name="item_id" value="{{ item.id }}">
+              <div class="form-group">
+                <label for="tamanho_{{ item.id }}">Escolha o tamanho:</label>
+                <select name="tamanho_item_id" id="tamanho_{{ item.id }}" class="form-control">
+                  {% for tam_item in item.tamanhoitem_set.all %}
+                    <option value="{{ tam_item.id }}">
+                      {{ tam_item.tamanho }} - R$ {{ tam_item.preco }}
+                    </option>
+                  {% endfor %}
+                </select>
+              </div>
+              <button type="submit" class="btn btn-primary">Adicionar ao Carrinho</button>
+            </form>
           </div>
         </div>
-      {% endif %}
+      </div>
     {% endfor %}
   </div>
 {% endfor %}
