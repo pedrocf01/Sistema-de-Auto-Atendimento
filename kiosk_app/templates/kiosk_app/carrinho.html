@@ -1,0 +1,46 @@
+<!-- templates/kiosk_app/carrinho.html -->
+{% extends 'base.html' %}
+
+{% block title %}Meu Carrinho{% endblock %}
+
+{% block content %}
+<h2>Meu Carrinho</h2>
+{% if itens_pedido %}
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Tamanho</th>
+                <th>Quantidade</th>
+                <th>Preço Unitário</th>
+                <th>Subtotal</th>
+                
+            </tr>
+        </thead>
+        <tbody>
+            {% for detalhe_pedido in itens_pedido %}
+                <tr>
+                    <td>{{ detalhe_pedido.id_item.id_item.nome_item }}</td>
+                    <td>{{ detalhe_pedido.id_item.tamanho }}</td>
+                    <td>
+                        <form action="{% url 'atualizar_item_carrinho' detalhe_pedido.id %}" method="post" class="form-inline">
+                            {% csrf_token %}
+                            <input type="number" name="quantidade" value="{{ detalhe_pedido.quantidade_item }}" min="1" class="form-control" style="width: 80px;">
+                            <button type="submit" class="btn btn-sm btn-success">Atualizar</button>
+                        </form>
+                    </td>
+                    <td>R$ {{ detalhe_pedido.id_item.preco }}</td>
+                    <td>R$ {{ detalhe_pedido.get_subtotal }}</td>
+                    <td>
+                        <a href="{% url 'remover_item_carrinho' detalhe_pedido.id %}" class="btn btn-sm btn-danger">Remover</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <h4>Total: R$ {{ total }}</h4>
+{% else %}
+    <p>Seu carrinho está vazio.</p>
+    <a href="{% url 'cardapio' %}" class="btn btn-secondary">Ver Cardápio</a>
+{% endif %}
+{% endblock %}
