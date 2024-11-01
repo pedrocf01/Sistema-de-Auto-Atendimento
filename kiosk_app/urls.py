@@ -6,7 +6,10 @@ urlpatterns = [
     # URLs do Cliente
     path('', views.cardapio_view, name='cardapio'),
     path('item/<int:item_id>/', views.item_detalhe_view, name='item_detalhe'),
+    path('adicionar_ao_carrinho/', views.adicionar_ao_carrinho, name='adicionar_ao_carrinho'),
     path('carrinho/', views.carrinho_view, name='carrinho'),
+    path('atualizar_item_carrinho/<int:detalhe_pedido_id>/', views.atualizar_item_carrinho, name='atualizar_item_carrinho'),
+    path('remover_item_carrinho/<int:detalhe_pedido_id>/', views.remover_item_carrinho, name='remover_item_carrinho'),
     path('pedido/resumo/', views.pedido_resumo_view, name='pedido_resumo'),
     path('pedido/rastreio/', views.pedido_rastreio_view, name='pedido_rastreio'),
     path('', include('users.urls'))
