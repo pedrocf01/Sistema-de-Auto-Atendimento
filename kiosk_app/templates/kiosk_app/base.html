@@ -24,13 +24,13 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'cardapio' %}">Menu</a>
+                        <a class="nav-link" href="{% url 'cardapio' %}">Cardápio</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'carrinho' %}">Cart</a>
+                        <a class="nav-link" href="{% url 'carrinho' %}">Carrinho</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'pedido_rastreio' %}">My Orders</a>
+                        <a class="nav-link" href="{% url 'pedido_rastreio' %}">Meus Pedidos</a>
                     </li>
                     <!-- Add authentication-related links -->
                     {% if user.is_authenticated %}
@@ -45,7 +45,7 @@
                             <a class="nav-link" href="{% url 'login' %}">Login</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'registrar_cliente' %}">Register</a>
+                            <a class="nav-link" href="{% url 'registrar_cliente' %}">Cadastrar</a>
                         </li>
                     {% endif %}
                 </ul>
