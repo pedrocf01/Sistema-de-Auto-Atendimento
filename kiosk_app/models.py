@@ -65,16 +65,21 @@ class Ingrediente(models.Model):
 
 class Pedido(models.Model):
     OPCOES_STATUS = (
-        (0, 'Pendente'),
-        (1, 'Em Preparação'),
-        (2, 'Pronto'),
-        (3, 'Cancelado'),
+        (0, 'Carrinho'),
+        (1, 'Pendente'),
+        (2, 'Em Preparação'),
+        (3, 'Pronto'),
+        (4, 'Cancelado'),
     )
     cliente = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     local_consumo = models.CharField(max_length=15, null=False)
     metodo_pagamento = models.CharField(max_length=30, null=False)
     status_pedido = models.IntegerField(choices=OPCOES_STATUS, default=0)
     data_pedido = models.DateTimeField(auto_now_add=True)
+
+    def get_total(self):
+        total = sum([item.get_subtotal() for item in self.itens.all()])
+        return total
 
     def __str__(self):
         return f"Pedido {self.id} - {self.cliente.username}"
@@ -89,12 +94,29 @@ class TamanhoItem(models.Model):
         unique_together = ('id_item', 'tamanho')
 
 
+class Carrinho(models.Model):
+    cliente = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"Carrinho de {self.cliente.username}"
+
+    # def get_total(self):
+    #     total = sum([item.get_subtotal() for item in self.itens.all()])
+    #     return total
+
+
 class DetalhePedido(models.Model):
-    id_pedido = models.ForeignKey(Pedido, on_delete=models.CASCADE)
+    # carrinho = models.ForeignKey(Carrinho, related_name='itens', on_delete=models.CASCADE, null=True)
+    pedido = models.ForeignKey(Pedido, related_name='itens', on_delete=models.CASCADE, null=True)
     id_item = models.ForeignKey(TamanhoItem, on_delete=models.CASCADE)
     quantidade_item = models.PositiveIntegerField(null=False)
     obs_item = models.CharField(max_length=50, null=True, blank=True)
-    preco_item_pedido = models.FloatField()
+
+    def get_subtotal(self):
+        return self.id_item.preco * self.quantidade_item
+
+    def __str__(self):
+        return f"{self.quantidade} x {self.id_item.id_item.nome_item} ({self.id_item.tamanho})"    
 
     class Meta:
-        unique_together = ('id_pedido', 'id_item')
+        unique_together = ('pedido', 'id_item')
