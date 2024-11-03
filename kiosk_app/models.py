@@ -39,7 +39,10 @@ class Promocao(models.Model):
     desconto = models.FloatField(null=False)
 
     def __str__(self):
-        return self.nome  
+        return self.nome
+
+    class Meta:
+        verbose_name_plural = 'promoções'      
 
 
 class Item(models.Model):
@@ -54,13 +57,16 @@ class Item(models.Model):
     def __str__(self):
         return self.nome_item
 
+    class Meta:
+        verbose_name_plural = 'itens'    
+
 
 class Ingrediente(models.Model):
     nome = models.CharField(max_length=100)
     valor_nutricional = models.PositiveIntegerField(blank=True)  # Informação nutricional
 
     def __str__(self):
-        return self.nome
+        return self.nome   
 
 
 class Pedido(models.Model):
@@ -90,8 +96,12 @@ class TamanhoItem(models.Model):
     tamanho = models.CharField(max_length=10, null=False)  # Ex: 'P', 'M', 'G'
     preco = models.FloatField(null=False)
 
+    def __str__(self):
+        return f"{self.id_item.nome_item} - {self.tamanho}" 
+
     class Meta:
         unique_together = ('id_item', 'tamanho')
+        verbose_name_plural = 'Tamanhos Item'
 
 
 class Carrinho(models.Model):
