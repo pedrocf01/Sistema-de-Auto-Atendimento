@@ -17,7 +17,7 @@
           <div class="card-body">
             <h5 class="card-title">{{ item.nome_item }}</h5>
             <p class="card-text">{{ item.descricao }}</p>
-            <form action="{% url 'adicionar_ao_carrinho' %}" method="post">
+            <form action="{% url 'kiosk_app:adicionar_ao_carrinho' %}" method="post">
               {% csrf_token %}
               <input type="hidden" name="item_id" value="{{ item.id }}">
               <div class="form-group">
@@ -25,7 +25,7 @@
                 <select name="tamanho_item_id" id="tamanho_{{ item.id }}" class="form-control">
                   {% for tam_item in item.tamanhoitem_set.all %}
                     <option value="{{ tam_item.id }}">
-                      {{ tam_item.tamanho }} - R$ {{ tam_item.preco }}
+                      {{ tam_item.tamanho }} - R${{ tam_item.preco }}
                     </option>
                   {% endfor %}
                 </select>
