@@ -21,8 +21,8 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('kiosk_app.urls'), name='kiosk_app'),
-    path('', include('users.urls')),
+    path('', include(('kiosk_app.urls', 'kiosk_app'), namespace='kiosk_app')),
+    path('', include(('users.urls', 'users'), namespace='users')),
 ]
 
 if settings.DEBUG:
