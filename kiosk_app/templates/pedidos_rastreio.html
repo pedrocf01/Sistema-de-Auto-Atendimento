@@ -1,0 +1,34 @@
+<!-- templates/pedido_rastreio.html -->
+{% extends 'base.html' %}
+
+{% block title %}
+    Meus Pedidos
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Meus Pedidos</h2>
+
+    {% if pedidos %}
+        <ul class="list-group">
+            {% for pedido in pedidos %}
+                <li class="list-group-item">
+                    <h5>Pedido ID: {{ pedido.id }}</h5>
+                    <p><strong>Status:</strong> {{ pedido.get_status_pedido_display }}</p>
+                    <p><strong>Data do Pedido:</strong> {{ pedido.data_pedido|date:"d/m/Y H:i" }}</p>
+                    <p><strong>Local de Consumo:</strong> {{ pedido.local_consumo }}</p>
+                    <p><strong>Método de Pagamento:</strong> {{ pedido.metodo_pagamento }}</p>
+                    <h6>Itens do Pedido:</h6>
+                    <ul>
+                        {% for item in pedido.detalhepedido_set.all %}
+                            <li>{{ item.item.nome_item }} - Quantidade: {{ item.quantidade_item }}</li>
+                        {% endfor %}
+                    </ul>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>Você não tem pedidos.</p>
+    {% endif %}
+</div>
+{% endblock %}
