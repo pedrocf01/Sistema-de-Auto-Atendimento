@@ -1,0 +1,35 @@
+<!-- templates/kiosk_app/finalizar_pedido.html -->
+{% extends 'base.html' %}
+
+{% block title %}Finalizar Pedido{% endblock %}
+
+{% block content %}
+<h2>Finalizar Pedido</h2>
+
+{% if error_message %}
+    <div class="alert alert-danger">{{ error_message }}</div>
+{% endif %}
+
+<form method="post">
+    {% csrf_token %}
+    <div class="form-group">
+        <label for="local_consumo">Local de Consumo:</label>
+        <select name="local_consumo" id="local_consumo" class="form-control">
+            <option value="">Selecione</option>
+            <option value="No Local">No Local</option>
+            <option value="Para Viagem">Para Viagem</option>
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="metodo_pagamento">Método de Pagamento:</label>
+        <select name="metodo_pagamento" id="metodo_pagamento" class="form-control">
+            <option value="">Selecione</option>
+            <option value="Dinheiro">Dinheiro</option>
+            <option value="Cartão de Crédito">Cartão de Crédito</option>
+            <option value="Cartão de Débito">Cartão de Débito</option>
+            <option value="Pix">Pix</option>
+        </select>
+    </div>
+    <button type="submit" class="btn btn-success">Confirmar Pedido</button>
+</form>
+{% endblock %}

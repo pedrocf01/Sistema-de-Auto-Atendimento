@@ -14,33 +14,55 @@
                 <th>Quantidade</th>
                 <th>Preço Unitário</th>
                 <th>Subtotal</th>
-                
             </tr>
         </thead>
         <tbody>
             {% for detalhe_pedido in itens_pedido %}
                 <tr>
-                    <td>{{ detalhe_pedido.id_item.id_item.nome_item }}</td>
-                    <td>{{ detalhe_pedido.id_item.tamanho }}</td>
                     <td>
-                        <form action="{% url 'atualizar_item_carrinho' detalhe_pedido.id %}" method="post" class="form-inline">
+                        {{ detalhe_pedido.item.nome_item }}
+                        {% if detalhe_pedido.ingredientes_extras.all %}
+                            <br><small>Extras:
+                                {% for ingrediente in detalhe_pedido.ingredientes_extras.all %}
+                                    {{ ingrediente.nome }}{% if not forloop.last %}, {% endif %}
+                                {% endfor %}
+                            </small>
+                        {% endif %}
+                        {% if detalhe_pedido.promocao %}
+                            <br><small class="text-success">Promoção: {{ detalhe_pedido.promocao.nome }} - Desconto: {{ detalhe_pedido.promocao.desconto }}%</small>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if detalhe_pedido.tamanho_item %}
+                            {{ detalhe_pedido.tamanho_item.tamanho }}
+                        {% else %}
+                            Único
+                        {% endif %}
+                        {% if detalhe_pedido.sabor %}
+                           <br><small>Sabor: {{ detalhe_pedido.sabor.nome }}</small>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <form action="{% url 'kiosk_app:atualizar_item_carrinho' detalhe_pedido.id %}" method="post" class="form-inline">
                             {% csrf_token %}
-                            <input type="number" name="quantidade" value="{{ detalhe_pedido.quantidade_item }}" min="1" class="form-control" style="width: 80px;">
+                            <input type="number" name="quantidade_item" value="{{ detalhe_pedido.quantidade_item }}" min="1" class="form-control" style="width: 80px;">
                             <button type="submit" class="btn btn-sm btn-success">Atualizar</button>
                         </form>
                     </td>
-                    <td>R$ {{ detalhe_pedido.id_item.preco }}</td>
-                    <td>R$ {{ detalhe_pedido.get_subtotal }}</td>
+                    <td>R${{ detalhe_pedido.get_decorated_item.get_preco|floatformat:2 }}</td>
+                    <td>R${{ detalhe_pedido.get_subtotal|floatformat:2 }}</td>
                     <td>
-                        <a href="{% url 'remover_item_carrinho' detalhe_pedido.id %}" class="btn btn-sm btn-danger">Remover</a>
+                        <a href="{% url 'kiosk_app:remover_item_carrinho' detalhe_pedido.id %}" class="btn btn-sm btn-danger">Remover</a>
                     </td>
                 </tr>
             {% endfor %}
         </tbody>
     </table>
-    <h4>Total: R$ {{ total }}</h4>
+    <h4>Total: R${{ total|floatformat:2 }}</h4>
+    <a href="{% url 'kiosk_app:cardapio' %}" class="btn btn-primary">Continuar Comprando</a>
+    <a href="{% url 'kiosk_app:finalizar_pedido' %}" class="btn btn-success">Finalizar Pedido</a>
 {% else %}
     <p>Seu carrinho está vazio.</p>
-    <a href="{% url 'cardapio' %}" class="btn btn-secondary">Ver Cardápio</a>
+    <a href="{% url 'kiosk_app:cardapio' %}" class="btn btn-secondary">Ver Cardápio</a>
 {% endif %}
 {% endblock %}

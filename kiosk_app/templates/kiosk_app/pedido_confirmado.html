@@ -1,0 +1,51 @@
+<!-- templates/kiosk_app/pedido_confirmado.html -->
+{% extends 'base.html' %}
+
+{% block title %}Pedido Confirmado{% endblock %}
+
+{% block content %}
+<h2>Pedido Confirmado</h2>
+<p>Seu pedido foi realizado com sucesso!</p>
+<p><strong>Número do Pedido:</strong> {{ pedido.id }}</p>
+<p><strong>Status:</strong> {{ pedido.get_status_pedido_display }}</p>
+<p><strong>Local de Consumo:</strong> {{ pedido.local_consumo }}</p>
+<p><strong>Método de Pagamento:</strong> {{ pedido.metodo_pagamento }}</p>
+<h4>Resumo do Pedido:</h4>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Item</th>
+            <th>Tamanho</th>
+            <th>Quantidade</th>
+            <th>Subtotal</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for detalhe_pedido in pedido.itens.all %}
+            <tr>
+                <td>
+                    {{ detalhe_pedido.item.nome_item }}
+                    {% if detalhe_pedido.ingredientes_extras.all %}
+                        <br><small>Extras:
+                            {% for ingrediente in detalhe_pedido.ingredientes_extras.all %}
+                                {{ ingrediente.nome }}{% if not forloop.last %}, {% endif %}
+                            {% endfor %}
+                        </small>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if detalhe_pedido.tamanho_item %}
+                        {{ detalhe_pedido.tamanho_item.tamanho }}
+                    {% else %}
+                        Único
+                    {% endif %}
+                </td>
+                <td>{{ detalhe_pedido.quantidade_item }}</td>
+                <td>R${{ detalhe_pedido.get_subtotal|floatformat:2 }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<h4>Total: R${{ pedido.get_total|floatformat:2 }}</h4>
+<a href="{% url 'kiosk_app:cardapio' %}" class="btn btn-primary">Voltar ao Cardápio</a>
+{% endblock %}
