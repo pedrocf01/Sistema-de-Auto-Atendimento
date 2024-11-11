@@ -11,6 +11,8 @@ urlpatterns = [
     path('atualizar_item_carrinho/<int:detalhe_pedido_id>/', views.atualizar_item_carrinho, name='atualizar_item_carrinho'),
     path('remover_item_carrinho/<int:detalhe_pedido_id>/', views.remover_item_carrinho, name='remover_item_carrinho'),
     path('pedido/resumo/', views.pedido_resumo_view, name='pedido_resumo'),
+    path('finalizar_pedido/', views.finalizar_pedido, name='finalizar_pedido'),
+    path('pedido_confirmado/<int:pedido_id>/', views.pedido_confirmado, name='pedido_confirmado'),
     path('pedido/rastreio/', views.pedido_rastreio_view, name='pedido_rastreio'),
     path('', include('users.urls'))
 
