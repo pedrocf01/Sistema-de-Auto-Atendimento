@@ -19,8 +19,8 @@
               <h5 class="card-title">{{ item.nome_item }}</h5>
               <p class="card-text">{{ item.descricao }}</p>
 
-              <!-- Display promotion info if any -->
-              {% if item.id_promocao and item.id_promocao.is_active %}
+              
+              {% if item.id_promocao and item.id_promocao.is_ativa %}
                 <p class="text-success">
                   Promoção: {{ item.id_promocao.nome }} - Desconto: {{ item.id_promocao.desconto }}%
                 </p>
@@ -30,7 +30,7 @@
                 {% csrf_token %}
                 <input type="hidden" name="item_id" value="{{ item.id }}">
 
-                <!-- Size Selection -->
+                
                 {% if item.tamanhos.all %}
                   <div class="form-group">
                     <label for="tamanho_{{ item.id }}">Escolha o tamanho:</label>
@@ -42,12 +42,14 @@
                       {% endfor %}
                     </select>
                   </div>
-                {% endif %}
+                {% else %}
+                  <h4>R${{ item.preco_base|floatformat:2 }}</h4>
+                {% endif %}  
 
-                <!-- Flavor Selection -->
+                
                 {% if item.sabores.all %}
                     <div class="form-group">
-                        <label for="sabor_{{ item.id }}">Escolha o sabor:</label>
+                        <label for="sabor_{{ item.id }}">Opções Disponíveis:</label>
                         <select name="sabor_id" id="sabor_{{ item.id }}" class="form-control" required>
                             {% for sabor in item.sabores.all %}
                                 <option value="{{ sabor.id }}">
@@ -58,7 +60,7 @@
                     </div>
                 {% endif %}
 
-                <!-- Extra Ingredients Selection -->
+                
                 {% if item.ingredientes_extras.all %}
                   <div class="form-group">
                     <label>Ingredientes extras:</label>
@@ -66,7 +68,10 @@
                       <div class="form-check">
                         <input class="form-check-input" type="checkbox" name="ingredientes_extras" id="ingrediente_{{ item.id }}_{{ ingrediente.id }}" value="{{ ingrediente.id }}">
                         <label class="form-check-label" for="ingrediente_{{ item.id }}_{{ ingrediente.id }}">
-                          {{ ingrediente.nome }} - R$ {{ ingrediente.custo }}
+                          {{ ingrediente.nome }}
+                          {% if ingrediente.custo > 0 %}
+                            - R$ {{ ingrediente.custo|floatformat:2 }}
+                          {% endif %}
                         </label>
                       </div>
                     {% endfor %}

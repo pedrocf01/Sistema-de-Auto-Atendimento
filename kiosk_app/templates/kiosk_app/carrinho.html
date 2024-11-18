@@ -39,7 +39,7 @@
                             Único
                         {% endif %}
                         {% if detalhe_pedido.sabor %}
-                           <br><small>Sabor: {{ detalhe_pedido.sabor.nome }}</small>
+                           <br><small> {{ detalhe_pedido.sabor.nome }}</small>
                         {% endif %}
                     </td>
                     <td>
@@ -49,7 +49,7 @@
                             <button type="submit" class="btn btn-sm btn-success">Atualizar</button>
                         </form>
                     </td>
-                    <td>R${{ detalhe_pedido.get_decorated_item.get_preco|floatformat:2 }}</td>
+                    <td>R${{ detalhe_pedido.get_decorated_item.calcular_preco|floatformat:2 }}</td>
                     <td>R${{ detalhe_pedido.get_subtotal|floatformat:2 }}</td>
                     <td>
                         <a href="{% url 'kiosk_app:remover_item_carrinho' detalhe_pedido.id %}" class="btn btn-sm btn-danger">Remover</a>

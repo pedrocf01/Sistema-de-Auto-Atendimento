@@ -28,12 +28,22 @@
                     </li>
                     <!-- Add authentication-related links -->
                     {% if user.is_authenticated %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'kiosk_app:carrinho' %}">Carrinho</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'kiosk_app:pedido_rastreio' %}">Meus Pedidos</a>
-                        </li>
+                        {% if user.papel == 'cliente' %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'kiosk_app:carrinho' %}">Carrinho</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'kiosk_app:pedido_rastreio' %}">Meus Pedidos</a>
+                            </li>
+                        {% endif %}
+                        {% if user.papel == 'cozinheiro' %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'kiosk_app:cozinheiro_historico' %}">Histórico de Pedidos</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'kiosk_app:cozinheiro_pedidos' %}">Pedidos Pendentes</a>
+                            </li>
+                        {% endif %} 
                         <li class="nav-item">
                             <a class="nav-link" href="#">{{ user.username }}</a>
                         </li>
