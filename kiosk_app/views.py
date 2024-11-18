@@ -1,9 +1,12 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import (Categoria, Ingrediente, Item, Promocao, Sabor, Pedido, DetalhePedido,
-    TamanhoItem, TamanhoDecorator, PromocaoDecorator, IngredienteExtraDecorator)
-from django.contrib.auth.decorators import login_required
+from .models import Categoria, Item, Promocao, Pedido, DetalhePedido, TamanhoItem
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.utils import timezone
-from django.db.models import Count
+from django.contrib import messages
+from django.db.models import Count, F, ExpressionWrapper, DurationField
+from .gerenciador_carrinho import ItemCarrinho, GerenciadorCarrinho
+from .servicos_checkout import ServicoCheckout
+from users.models import Usuario
 
 
 def cardapio_view(request):
@@ -22,10 +25,6 @@ def item_detalhe_view(request, item_id):
     }
     return render(request, 'item_detalhe.html', context)
 
-def pedido_resumo_view(request):
-    # Confirmação do pedido
-    pass
-
 
 @login_required
 def pedido_rastreio_view(request):
@@ -39,62 +38,20 @@ def pedido_rastreio_view(request):
 @login_required
 def adicionar_ao_carrinho(request):
     if request.method == 'POST':
-    
-        item_id = request.POST.get('item_id')
-        tamanho_item_id = request.POST.get('tamanho_item_id')
-        sabor_id = request.POST.get('sabor_id') 
-        ingredientes_extras_ids = request.POST.getlist('ingredientes_extras')
-
-        item = get_object_or_404(Item, id=item_id)
-        tamanho_item = None
-        if tamanho_item_id:
-            tamanho_item = get_object_or_404(TamanhoItem, id=tamanho_item_id, item=item)
-        sabor = None
-        if sabor_id:
-            sabor = get_object_or_404(Sabor, id=sabor_id)
-            if not item.sabores.filter(id=sabor.id).exists():
-                sabor = None
-
-        ingredientes_extras_validos = item.ingredientes_extras.filter(id__in=ingredientes_extras_ids)
-
-        pedido, created = Pedido.objects.get_or_create(cliente=request.user, status_pedido=0)
-
-        current_date = timezone.now().date()
-        promocao = item.id_promocao if item.id_promocao and item.id_promocao.data_inicio <= current_date <= item.id_promocao.data_fim else None
-
-        detalhe_pedido_queryset = DetalhePedido.objects.filter(
-            pedido=pedido,
-            item=item,
-            tamanho_item=tamanho_item,
-            promocao=promocao,
-            sabor=sabor  
+        # Criar ItemCarrinho a partir dos dados da requisição
+        item_carrinho = ItemCarrinho(
+            item_id=request.POST.get('item_id'),
+            tamanho_item_id=request.POST.get('tamanho_item_id'),
+            sabor_id=request.POST.get('sabor_id'),
+            ingredientes_extras_ids=request.POST.getlist('ingredientes_extras')
         )
 
-        detalhe_pedido = None
-        for dp in detalhe_pedido_queryset:
-            ingredientes_existentes = set(dp.ingredientes_extras.all())
-            ingredientes_selecionados = set(ingredientes_extras_validos)
-            if ingredientes_existentes == ingredientes_selecionados:
-                detalhe_pedido = dp
-                break
-
-        if detalhe_pedido:
-            detalhe_pedido.quantidade_item += 1
-            detalhe_pedido.save()
-        else:
-            detalhe_pedido = DetalhePedido.objects.create(
-                pedido=pedido,
-                item=item,
-                tamanho_item=tamanho_item,
-                sabor=sabor,  
-                promocao=promocao,
-                quantidade_item=1,
-            )
-            detalhe_pedido.ingredientes_extras.set(ingredientes_extras_validos)
+        # Usar o GerenciadorCarrinho para adicionar o item
+        gerenciador_carrinho = GerenciadorCarrinho(request.user)
+        gerenciador_carrinho.adicionar_item(item_carrinho)
 
         return redirect('kiosk_app:carrinho')
-    else:
-        return redirect('kiosk_app:cardapio')
+    return redirect('kiosk_app:cardapio')
 
 
 
@@ -133,43 +90,114 @@ def remover_item_carrinho(request, detalhe_pedido_id):
 
 @login_required
 def finalizar_pedido(request):
-    # Get the user's current cart (Pedido with status 'Carrinho')
-    pedido = Pedido.objects.filter(cliente=request.user, status_pedido=0).first()
+    servico_checkout = ServicoCheckout(request.user)
+    pedido = servico_checkout.obter_carrinho_ativo()
     
-    if not pedido:
-        # If no cart exists, redirect to the menu
+    # Valida o carrinho
+    carrinho_valido, erro_carrinho = servico_checkout.validar_carrinho(pedido)
+    if not carrinho_valido:
         return redirect('kiosk_app:cardapio')
-    else:
-        # Check if the cart has items
-        if not pedido.itens.exists():
-            # If the cart is empty, redirect to the menu
-            return redirect('kiosk_app:cardapio')
 
     if request.method == 'POST':
-        # Process the form data
+        # Obtém os dados do formulário
         local_consumo = request.POST.get('local_consumo')
         metodo_pagamento = request.POST.get('metodo_pagamento')
 
-        # Validate the form data
-        if local_consumo and metodo_pagamento:
-            # Update the pedido with the provided information
-            pedido.local_consumo = local_consumo
-            pedido.metodo_pagamento = metodo_pagamento
-            pedido.status_pedido = 1  # Update status to 'Pendente'
-            pedido.save()
+        # Valida os dados do formulário
+        dados_validos, mensagem_erro = servico_checkout.validar_dados_checkout(
+            local_consumo, 
+            metodo_pagamento
+        )
 
-            # Redirect to the order confirmation page
+        if dados_validos:
+            # Processa o checkout
+            servico_checkout.processar_checkout(pedido, local_consumo, metodo_pagamento)
             return redirect('kiosk_app:pedido_confirmado', pedido_id=pedido.id)
         else:
-            # If data is missing, render the form again with an error message
-            error_message = 'Por favor, preencha todos os campos.'
-            return render(request, 'kiosk_app/finalizar_pedido.html', {'pedido': pedido, 'error_message': error_message})
-    else:
-        # GET request: render the checkout form
-        return render(request, 'kiosk_app/finalizar_pedido.html', {'pedido': pedido})
+            # Retorna o formulário com a mensagem de erro
+            return render(request, 'kiosk_app/finalizar_pedido.html', {
+                'pedido': pedido,
+                'mensagem_erro': mensagem_erro
+            })
+
+    # Requisição GET: renderiza o formulário de checkout
+    return render(request, 'kiosk_app/finalizar_pedido.html', {'pedido': pedido})
 
 
 @login_required
 def pedido_confirmado(request, pedido_id):
     pedido = get_object_or_404(Pedido, id=pedido_id, cliente=request.user)
     return render(request, 'kiosk_app/pedido_confirmado.html', {'pedido': pedido})        
+
+
+def is_cozinheiro(user):
+    return user.papel == 'cozinheiro'
+
+
+@login_required
+@user_passes_test(is_cozinheiro)
+def cozinheiro_pedido_fila_view(request):
+    """
+    Display orders queue for cozinheiro, prioritized by waiting time.
+    Only shows pending and in-preparation orders.
+    """
+    # Calculate waiting time for each order
+    pedidos = Pedido.objects.filter(
+        status_pedido__in=[1, 2]  # Pending or In Preparation
+    ).annotate(
+        waiting_time=ExpressionWrapper(
+            timezone.now() - F('data_pedido'),
+            output_field=DurationField()
+        )
+    ).order_by('status_pedido', 'data_pedido')
+
+    context = {
+        'pedidos': pedidos,
+        'status_map': dict(Pedido.OPCOES_STATUS)
+    }
+    return render(request, 'kiosk_app/cozinha/fila_pedidos.html', context)
+
+
+@login_required
+@user_passes_test(is_cozinheiro)
+def cozinheiro_alterar_pedido(request, pedido_id):
+    """
+    Update order status (In Preparation -> Ready)
+    """
+    if request.method == 'POST':
+        pedido = get_object_or_404(Pedido, id=pedido_id)
+        novo_status = int(request.POST.get('novo_status'))
+        
+        # Validate status transition
+        if novo_status in [2, 3]:  # Only allow transitions to 'In Preparation' or 'Ready'
+            if novo_status == 3:
+                pedido.data_conclusao = timezone.now()
+            pedido.status_pedido = novo_status
+            pedido.save()
+            messages.success(request, f'Status do pedido {pedido.id} atualizado com sucesso.')
+        else:
+            messages.error(request, 'Transição de status inválida.')
+            
+    return redirect('kiosk_app:cozinheiro_pedidos')
+
+
+@login_required
+@user_passes_test(is_cozinheiro)
+def cozinheiro_pedido_historico_view(request):
+    """
+    Exibe o histórico de pedidos concluídos nas últimas 24 horas.
+    """
+    # Define o período de 24 horas
+    data_inicio = timezone.now() - timezone.timedelta(days=1)
+    data_fim = timezone.now()
+    
+    # Filtra pedidos concluídos nas últimas 24 horas
+    pedidos_completados = Pedido.objects.filter(
+        status_pedido=3,  # Status "Pronto"
+        data_pedido__range=(data_inicio, data_fim)
+    ).order_by('-data_pedido')
+
+    context = {
+        'pedidos': pedidos_completados
+    }
+    return render(request, 'kiosk_app/cozinha/historico_pedidos.html', context)    
