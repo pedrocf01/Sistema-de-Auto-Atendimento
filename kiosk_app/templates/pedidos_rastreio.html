@@ -20,7 +20,7 @@
                     <p><strong>Método de Pagamento:</strong> {{ pedido.metodo_pagamento }}</p>
                     <h6>Itens do Pedido:</h6>
                     <ul>
-                        {% for item in pedido.detalhepedido_set.all %}
+                        {% for item in pedido.itens.all %}
                             <li>{{ item.item.nome_item }} - Quantidade: {{ item.quantidade_item }}</li>
                         {% endfor %}
                     </ul>
