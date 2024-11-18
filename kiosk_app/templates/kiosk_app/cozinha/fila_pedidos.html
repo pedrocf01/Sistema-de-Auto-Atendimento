@@ -1,1 +1,72 @@
+{% extends 'base.html' %}
+{% load custom_filters %}
 
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-2xl font-bold mb-6">Fila de Pedidos</h1>
+    
+    <div class="grid gap-6">
+        {% for pedido in pedidos %}
+        <div class="bg-white rounded-lg shadow p-6 {% if pedido.waiting_time.seconds > 1800 %}border-l-4 border-red-500{% endif %}">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-semibold">Pedido #{{ pedido.id }}</h2>
+                <span class="text-gray-500">
+                    Tempo de espera: {{ pedido.waiting_time.seconds|divide:60 }} minutos
+                </span>
+            </div>
+            
+            <div class="space-y-4">
+                {% for detalhe in pedido.itens.all %}
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="font-medium">
+                            {{ detalhe.quantidade_item }}x {{ detalhe.item.nome_item }}
+                            {% if detalhe.tamanho_item %} (Tamanho: {{ detalhe.tamanho_item.tamanho }}){% endif %}
+                            {% if detalhe.sabor %} - {{ detalhe.sabor.nome }}{% endif %}
+                            {% if detalhe.ingredientes_extras.exists %}
+                            -- Ingredientes Extras: 
+                            {% for ingrediente in detalhe.ingredientes_extras.all %}
+                                {{ ingrediente.nome }}{% if not forloop.last %}, {% endif %}
+                            {% endfor %}
+                            {% endif %}
+                        </p>
+                        
+                        {% if detalhe.obs_item %}
+                        <p class="text-sm text-gray-600">Observação: {{ detalhe.obs_item }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <div class="mt-6 flex justify-end">
+                <form method="POST" action="{% url 'kiosk_app:cozinheiro_alterar_pedido' pedido.id %}">
+                    {% csrf_token %}
+                    {% if pedido.status_pedido == 1 %}
+                    <!-- Botão para iniciar a preparação do pedido -->
+                    <input type="hidden" name="novo_status" value="2">
+                    <button type="submit" class="btn btn-primary px-4 py-2 rounded">
+                        Iniciar Preparação
+                    </button>
+                    
+                    {% elif pedido.status_pedido == 2 %}
+                    <!-- Botão para marcar o pedido como pronto -->
+                    <input type="hidden" name="novo_status" value="3">
+                    <button type="submit" class="btn btn-success px-4 py-2 rounded">
+                        Marcar como Pronto
+                    </button>
+                    
+                    {% elif pedido.status_pedido == 3 %}
+                    <!-- Status de pedido concluído com data de conclusão -->
+                    <span class="text-gray-600 px-4 py-2">Pedido concluído em {{ pedido.data_conclusao|date:"d/m/Y H:i" }}</span>
+                    
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+        {% empty %}
+        <p class="text-center text-gray-500">Não há pedidos na fila no momento.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
