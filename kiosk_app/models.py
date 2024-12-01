@@ -41,9 +41,10 @@ class Promocao(models.Model):
     def __str__(self):
         return self.nome
 
+    @property    
     def is_ativa(self) -> bool:
         hoje = timezone.now().date()
-        return self.data_inicio <= today <= self.data_fim    
+        return self.data_inicio <= hoje <= self.data_fim    
 
     def clean(self):
         if self.data_fim <= self.data_inicio:
@@ -192,7 +193,7 @@ class PedidoServico:
         decorated_item = detalhe_pedido.item
         if detalhe_pedido.tamanho_item:
             decorated_item = TamanhoDecorator(decorated_item, detalhe_pedido.tamanho_item)
-        if detalhe_pedido.promocao:
+        if detalhe_pedido.promocao_ativa:
             decorated_item = PromocaoDecorator(decorated_item, detalhe_pedido.promocao)
         if detalhe_pedido.sabor:
             decorated_item = SaborDecorator(decorated_item, detalhe_pedido.sabor)
@@ -217,6 +218,10 @@ class DetalhePedido(models.Model):
     def get_subtotal(self) -> float:
         decorated_item = self.get_decorated_item()
         return decorated_item.calcular_preco() * self.quantidade_item
+
+    @property
+    def promocao_ativa(self):
+        return self.promocao.is_ativa if self.promocao else False    
 
     def __str__(self):
         size_info = f" ({self.tamanho_item.tamanho})" if self.tamanho_item else ""

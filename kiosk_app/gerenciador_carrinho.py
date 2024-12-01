@@ -103,10 +103,14 @@ class GerenciadorCarrinho:
         if detalhe_pedido:
             self._atualizar_item_existente(detalhe_pedido)
         else:
-            self._criar_novo_item(
-                pedido, item, tamanho_item, promocao, 
-                sabor, ingredientes_extras
-            )
+            try:
+                self._criar_novo_item(
+                    pedido, item, tamanho_item, promocao, 
+                    sabor, ingredientes_extras
+                )
+            except ValidationError as e:
+                print(f"Erro ao criar item no carrinho: {e.message_dict}")
+                raise  
 
     def _atualizar_item_existente(self, detalhe_pedido):
         detalhe_pedido.quantidade_item += 1
@@ -121,4 +125,10 @@ class GerenciadorCarrinho:
             promocao=promocao,
             quantidade_item=1
         )
+
+        detalhe_pedido.full_clean()  # Invoca o método clean() do modelo
+        detalhe_pedido.save()
         detalhe_pedido.ingredientes_extras.set(ingredientes_extras)
+
+    
+      
