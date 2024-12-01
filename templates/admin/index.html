@@ -1,1 +1,13 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
 
+{% block content %}
+
+    <div class="module">
+        <h2>Relatórios</h2>
+        <ul>
+            <li><a href="{% url 'relatorio_vendas' %}">Relatório de Vendas</a></li>
+        </ul>
+    </div>
+
+{% endblock %}

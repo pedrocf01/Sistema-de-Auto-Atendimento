@@ -1,0 +1,112 @@
+<!-- templates/admin/sales_report.html -->
+{% extends "admin/base_site.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}Relatório de Vendas{% endblock %}
+
+{% block content %}
+<h1>Relatório de Vendas</h1>
+
+
+<div class="module">
+    <form method="GET" class="form">
+        <fieldset class="module aligned">
+            <div class="form-row">
+                <label for="id_data_inicio">{% trans "Data Início" %}:</label>
+                <input type="date" name="data_inicio" id="id_data_inicio" value="{{ data_inicio|date:'Y-m-d' }}" class="vDateField">
+            </div>
+            <div class="form-row">
+                <label for="id_data_fim">{% trans "Data Fim" %}:</label>
+                <input type="date" name="data_fim" id="id_data_fim" value="{{ data_fim|date:'Y-m-d' }}" class="vDateField">
+            </div>
+            <div class="submit-row">
+                <input type="submit" value="{% trans 'Filtrar' %}" class="default">
+            </div>
+        </fieldset>
+    </form>
+</div>
+
+
+<div class="module">
+    <h2>{% trans "Métricas Gerais" %}</h2>
+    <table class="stats">
+        <tbody>
+            <tr>
+                <th>{% trans "Total de Vendas" %}</th>
+                <td>R$ {{ metricas_gerais.total_vendas|floatformat:2 }}</td>
+            </tr>
+            <tr>
+                <th>{% trans "Número de Pedidos" %}</th>
+                <td>{{ metricas_gerais.numero_pedidos }}</td>
+            </tr>
+            <tr>
+                <th>{% trans "Itens Vendidos" %}</th>
+                <td>{{ metricas_gerais.itens_vendidos }}</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="module">
+    <h2>{% trans "Vendas por Categoria" %}</h2>
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>{% trans "Categoria" %}</th>
+                <th>{% trans "Quantidade" %}</th>
+                <th>{% trans "Total Vendas" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for categoria in vendas_categorias %}
+            <tr>
+                <td>{{ categoria.nome_categoria }}</td>
+                <td class="right">{{ categoria.quantidade_vendida }}</td>
+                <td class="right">R$ {{ categoria.total_vendas|floatformat:2 }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="3">{% trans "Sem dados disponíveis." %}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+
+<div class="module">
+    <h2>{% trans "Produtos Mais Vendidos" %}</h2>
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>{% trans "Produto" %}</th>
+                <th>{% trans "Quantidade" %}</th>
+                <th>{% trans "Receita Total" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for produto in produtos_top %}
+            <tr>
+                <td>{{ produto.nome_item }}</td>
+                <td class="right">{{ produto.quantidade_total }}</td>
+                <td class="right">R$ {{ produto.receita_total|floatformat:2 }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="3">{% trans "Sem dados disponíveis." %}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+
+
+{% block extrahead %}
+{{ block.super }}
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+{% endblock %}
