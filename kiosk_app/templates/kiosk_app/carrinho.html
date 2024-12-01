@@ -28,7 +28,7 @@
                                 {% endfor %}
                             </small>
                         {% endif %}
-                        {% if detalhe_pedido.promocao %}
+                        {% if detalhe_pedido.promocao_ativa %}
                             <br><small class="text-success">Promoção: {{ detalhe_pedido.promocao.nome }} - Desconto: {{ detalhe_pedido.promocao.desconto }}%</small>
                         {% endif %}
                     </td>
