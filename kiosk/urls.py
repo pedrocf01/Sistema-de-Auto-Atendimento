@@ -18,11 +18,15 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from kiosk_app import views
 
 urlpatterns = [
+    path('admin/relatorio_vendas/', views.RelatorioVendasView.as_view(), name='relatorio_vendas'),
     path('admin/', admin.site.urls),
     path('', include(('kiosk_app.urls', 'kiosk_app'), namespace='kiosk_app')),
     path('', include(('users.urls', 'users'), namespace='users')),
+    # path('admin/relatorio_vendas/', views.RelatorioVendasView.as_view(), name='relatorio_vendas'),
+    
 ]
 
 if settings.DEBUG:
