@@ -187,19 +187,52 @@ class Pedido(models.Model):
         return f"Pedido {self.id} - {self.cliente.username}"
 
 
-class PedidoServico:
-    @staticmethod
-    def create_decorated_item(detalhe_pedido: 'DetalhePedido') -> ItemDecorator:
-        decorated_item = detalhe_pedido.item
-        if detalhe_pedido.tamanho_item:
-            decorated_item = TamanhoDecorator(decorated_item, detalhe_pedido.tamanho_item)
-        if detalhe_pedido.promocao_ativa:
-            decorated_item = PromocaoDecorator(decorated_item, detalhe_pedido.promocao)
-        if detalhe_pedido.sabor:
-            decorated_item = SaborDecorator(decorated_item, detalhe_pedido.sabor)
-        for ingrediente in detalhe_pedido.ingredientes_extras.all():
-            decorated_item = IngredienteExtraDecorator(decorated_item, ingrediente)
-        return decorated_item
+# class ServicoDecorator:
+#     @staticmethod
+#     def create_decorated_item(detalhe_pedido: 'DetalhePedido') -> ItemDecorator:
+#         decorated_item = detalhe_pedido.item
+#         if detalhe_pedido.tamanho_item:
+#             decorated_item = TamanhoDecorator(decorated_item, detalhe_pedido.tamanho_item)
+#         if detalhe_pedido.promocao_ativa:
+#             decorated_item = PromocaoDecorator(decorated_item, detalhe_pedido.promocao)
+#         if detalhe_pedido.sabor:
+#             decorated_item = SaborDecorator(decorated_item, detalhe_pedido.sabor)
+#         for ingrediente in detalhe_pedido.ingredientes_extras.all():
+#             decorated_item = IngredienteExtraDecorator(decorated_item, ingrediente)
+#         return decorated_item
+
+
+class ServicoDecorator:
+    def __init__(self, detalhe_pedido: 'DetalhePedido'):
+        self.detalhe_pedido = detalhe_pedido
+
+    def aplicar_decorators(self) -> ItemDecorator:
+        item = self.detalhe_pedido.item
+        item = self.aplicar_tamanho(item)
+        item = self.aplicar_promocao(item)
+        item = self.aplicar_sabor(item)
+        item = self.aplicar_ingredientes_extras(item)
+        return item
+
+    def aplicar_tamanho(self, item: ItemDecorator) -> ItemDecorator:
+        if self.detalhe_pedido.tamanho_item:
+            return TamanhoDecorator(item, self.detalhe_pedido.tamanho_item)
+        return item
+
+    def aplicar_promocao(self, item: ItemDecorator) -> ItemDecorator:
+        if self.detalhe_pedido.promocao_ativa:
+            return PromocaoDecorator(item, self.detalhe_pedido.promocao)
+        return item
+
+    def aplicar_sabor(self, item: ItemDecorator) -> ItemDecorator:
+        if self.detalhe_pedido.sabor:
+            return SaborDecorator(item, self.detalhe_pedido.sabor)
+        return item
+
+    def aplicar_ingredientes_extras(self, item: ItemDecorator) -> ItemDecorator:
+        for ingrediente in self.detalhe_pedido.ingredientes_extras.all():
+            item = IngredienteExtraDecorator(item, ingrediente)
+        return item
 
 
 class DetalhePedido(models.Model):
@@ -213,7 +246,9 @@ class DetalhePedido(models.Model):
     sabor = models.ForeignKey(Sabor, on_delete=models.SET_NULL, null=True, blank=True)
 
     def get_decorated_item(self) -> ItemDecorator:
-        return PedidoServico.create_decorated_item(self)
+        # return ServicoDecorator.create_decorated_item(self)
+        servico = ServicoDecorator(self)
+        return servico.aplicar_decorators()
 
     def get_subtotal(self) -> float:
         decorated_item = self.get_decorated_item()
